@@ -4,7 +4,7 @@
 
 ## 기능 및 특징
 - **양방향 통역**: `USER_EN_ID`의 메시지는 영어 원문으로 간주하여 한국어로 번역하고, `USER_KO_ID`의 메시지는 한국어로 간주하여 영어로 번역합니다.
-- **로컬 LLM 연동**: Ollama의 `gemma4:2b` 모델의 API를 활용하여 무료로 번역을 수행합니다.
+- **로컬 LLM 연동**: Ollama의 `gemma4:26b` 모델 API를 활용하여 번역을 수행합니다.
 - **간단한 명령어**:
   - `!ping`: `pong` 응답.
   - `!status`: 현재 봇의 번역 상태, 허용 채널, 사용 모델 등을 출력.
@@ -19,7 +19,7 @@
 ### 1. Python 환경 세팅
 Python 3.11 이상 환경을 준비하고 패키지를 설치합니다.
 ```bash
-python -m venv venv
+python3 -m venv venv
 # Windows:
 venv\Scripts\activate
 # macOS/Linux:
@@ -47,18 +47,18 @@ cp .env.example .env
 4. **Message Content Intent** 스위치를 `켜기(ON)`로 설정 후 `Save Changes`.
 
 ### 4. 로컬 Ollama 구동
-동작하는 기기(또는 원격 서버)에 Ollama가 실행 중이어야 합니다. 모델의 기본값은 `gemma4:2b` 입니다.
+동작하는 기기(또는 원격 서버)에 Ollama가 실행 중이어야 합니다. 현재 설정 기준 모델은 `gemma4:26b` 입니다.
 
 ```bash
 # 로컬에서 모델 실행 (HTTP 서버 자동 구동 됨)
-ollama run gemma4:2b
+ollama run gemma4:26b
 ```
 
 ## 실행 방법
 
 아래 커맨드를 통해 봇을 실행하세요.
 ```bash
-python -m app.bot
+python3 -m app.bot
 ```
 
 ## 테스트 시나리오
