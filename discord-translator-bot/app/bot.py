@@ -39,13 +39,16 @@ class TranslatorBot(discord.Client):
         if content == "!status":
             state_str = "ON 🟢" if router.is_enabled() else "OFF 🔴"
             allowed_channels = ", ".join(str(cid) for cid in config.ALLOWED_CHANNEL_IDS) or "없음"
+            target_users = ", ".join(
+                f"{user_id}:{mode}" for user_id, mode in config.USER_TRANSLATION_MODES.items()
+            ) or "없음"
             msg = (
                 "**[통역 봇 상태]**\n"
                 f"- 번역 모드: {state_str}\n"
                 f"- 허용된 채널 수: {len(config.ALLOWED_CHANNEL_IDS)}개\n"
                 f"- 허용 채널 IDs: `{allowed_channels}`\n"
                 f"- 사용 언어 모델: `{config.OLLAMA_MODEL}`\n"
-                f"- 대상 사용자 IDs: `EN:{config.USER_EN_ID}` / `KO:{config.USER_KO_ID}`"
+                f"- 대상 사용자 모드: `{target_users}`"
             )
             logger.info("!status 명령 감지, 상태 응답 시도")
             await message.channel.send(msg)
@@ -87,7 +90,7 @@ class TranslatorBot(discord.Client):
             if translated_message:
                 await message.channel.send(translated_message)
             else:
-                await message.channel.send("번역 실패")
+                logger.info("번역 결과가 없어 응답을 생략합니다. author=%s", message.author.id)
         except Exception as e:
             logger.error(f"메시지 번역/처리 과정에서 에러 발생: {e}")
             await message.channel.send("번역 실패")
