@@ -1,5 +1,6 @@
 from .ollama_client import generate_response
 from .formatter import clean_translation
+from .history import ConversationMessage
 from .utils import logger
 
 # 영어 -> 한국어 시스템 프롬프트
@@ -22,7 +23,25 @@ Strictly adhere to the following rules:
 4. Output ONLY the translated result.
 5. Keep names and proper nouns as they are or transliterate them. Do not translate them arbitrarily.
 6. Do not perform unnecessary censorship.
-7. Preserve emojis and line breaks exactly as they appear in the original text."""
+7. Preserve emojis and line breaks exactly as they appear in the original text.
+8. Conversation context is only for resolving omitted subjects, references, names, and pronouns. Translate ONLY the Current Korean message.
+9. Korean often omits subjects. Do not default omitted subjects to "I" or "you". If the context indicates a third party, use that third party as the subject.
+10. Example: if the context discusses Gemini and the current message says "말을 너무 잘하잖아요", translate it as "Gemini speaks so well", not "I speak so well" or "You speak so well"."""
+
+
+def build_contextual_prompt(text: str, context: list[ConversationMessage] | None = None) -> str:
+    if not context:
+        return text
+
+    context_lines = "\n".join(
+        f"{message.speaker_label}: {message.content}" for message in context
+    )
+    return (
+        "Conversation context:\n"
+        f"{context_lines}\n\n"
+        "Current Korean message:\n"
+        f"{text}"
+    )
 
 async def translate_en_to_ko(text: str) -> str | None:
     """영어를 한국어로 번역"""
@@ -35,10 +54,11 @@ async def translate_en_to_ko(text: str) -> str | None:
     cleaned = clean_translation(result)
     return cleaned if cleaned else None
 
-async def translate_ko_to_en(text: str) -> str | None:
+async def translate_ko_to_en(text: str, context: list[ConversationMessage] | None = None) -> str | None:
     """한국어를 영어로 번역"""
     logger.info(f"[KO->EN] 번역 요청 (길이: {len(text)}자)")
-    result = await generate_response(prompt=text, system=PROMPT_KO_TO_EN)
+    prompt = build_contextual_prompt(text, context)
+    result = await generate_response(prompt=prompt, system=PROMPT_KO_TO_EN)
     
     if not result:
         return None
